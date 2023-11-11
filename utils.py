@@ -3,7 +3,7 @@ import unicodedata
 from glob import glob
 import os
 import io
-
+import random
 
 # Letters in out vocabulary
 LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ .,;'"
@@ -15,18 +15,17 @@ def letter_to_tensor(letter, LETTERS=LETTERS):
     t = t.unsqueeze(dim=0)
     return t
 
-letter_to_tensor("a")
 # Returns tensor format of a line of letters
-def line_to_tensor(word):
+def sentence_to_tensor(sentence):
     t = torch.tensor([])
-    return (torch.cat(list(letter_to_tensor[letter] for letter in word), dim=0)).unsqueeze(1)
+    return (torch.cat(list(letter_to_tensor(letter) for letter in sentence), dim=0)).unsqueeze(1)
 
 
 # Turns unicode to asci
 def unicode_to_ascii(s):
     return ''.join(
         c for c in unicodedata.normalize('NFD', s)
-        if unicodedata.category(c) != 'Mn' and c in s
+        if unicodedata.category(c) != 'Mn' and c in LETTERS
     )
 
 # Loads data into categories (classes) and data in the categories
@@ -45,3 +44,16 @@ def load_data():
         class_data[name] = names
 
     return classes, class_data
+
+
+def get_random_sample(languages, language_names):
+    language = random.choice(languages)
+    random_name = random.choice(language_names[language])
+    random_name_tensor = sentence_to_tensor(random_name)
+    language_tensor = torch.tensor([languages.index(language)], dtype=torch.long)
+
+    return language, language_tensor, random_name,  random_name_tensor
+    
+
+
+
